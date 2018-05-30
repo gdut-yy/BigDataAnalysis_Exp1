@@ -27,6 +27,7 @@ import jxl.Workbook;
  * 其中，用到 Apriori 性质： 
  * 一个频繁项集的任一子集也应是频繁项集。 
  * 逆否命题：如果一个项集是非频繁的，则它的超集也是非频繁的。 
+ * 
  * @author ZYY
  * 
  */  
@@ -39,9 +40,7 @@ public class Apriori {
 
 	/**
 	 * 计算Excel表中的列长度
-	 * 
-	 * @param list
-	 *            存放Excel表中单元格内容的Cell数组
+	 * @param list——存放Excel表中单元格内容的Cell数组
 	 * @return 列长度
 	 */
 	public int getColumnLength(List<Cell[]> list) {
@@ -58,14 +57,10 @@ public class Apriori {
 
 	/**
 	 * 首先确定每个项的支持度，得到频繁1-项集及候选1-项集
-	 * 
-	 * @param list
-	 *            存放了Excel每行记录的一个list
-	 * @param columnInitLoca
-	 *            要进行频繁项集筛选的首列位置
-	 * @param threshold
-	 *            阈值
-	 * @return 返回DataVO实体
+	 * @param list——存放了Excel每行记录的一个list
+	 * @param columnInitLoca——要进行频繁项集筛选的首列位置
+	 * @param threshold——阈值
+	 * @return 返回DataBean实体
 	 */
 	public DataBean getFrequentOneItemset(List<Cell[]> list, int columnInitLoca, int threshold) {
 		int i, j, maxLength = getColumnLength(list);
@@ -110,7 +105,6 @@ public class Apriori {
 
 	/**
 	 * 对候选子集进行剪枝
-	 * 
 	 * @param dataBean——DataBean实体
 	 * @return 返回修改后的DataBean实体
 	 */
@@ -140,13 +134,11 @@ public class Apriori {
 
 	/**
 	 * 组成新的候选子集
-	 * 
-	 * @param dataVO
-	 *            DataVO实体
-	 * @return 修改后的DataVO实体
+	 * @param dataBean——DataBean实体
+	 * @return 修改后的DataBean实体
 	 */
-	public DataBean createCandidateItemSet(DataBean dataVO) {
-		CandidateItemsetBean candidateItemSet = dataVO.getCandidateItemSet();
+	public DataBean createCandidateItemSet(DataBean dataBean) {
+		CandidateItemsetBean candidateItemSet = dataBean.getCandidateItemSet();
 		List<List<Integer>> candidateItemList = candidateItemSet.getCandidateItemList();
 		List<List<Integer>> newCandidateItemList = new ArrayList<List<Integer>>();
 		Set<List<Integer>> newCandidateItemListSet = new HashSet<List<Integer>>();
@@ -170,32 +162,26 @@ public class Apriori {
 		List<List<Integer>> resultList = new ArrayList<List<Integer>>();
 		resultList.addAll(newCandidateItemListSet);
 		candidateItemSet.setCandidateItemList(resultList);
-		dataVO.setCandidateItemSet(candidateItemSet);
-		return dataVO;
+		dataBean.setCandidateItemSet(candidateItemSet);
+		return dataBean;
 	}
 
 	/**
 	 * 得到频繁-k项集
-	 * 
-	 * @param dataVO
-	 *            DataVO实体
-	 * @param sheet
-	 *            工作表
-	 * @param cellList
-	 *            单元格List
-	 * @param threshold
-	 *            阈值
-	 * @param columnInitLoca
-	 *            要进行频繁项集筛选的首列位置
-	 * @return 修改后的DataVO实体
+	 * @param dataBean——DataBean实体
+	 * @param sheet——工作表
+	 * @param cellList——单元格List
+	 * @param threshold——阈值
+	 * @param columnInitLoca——要进行频繁项集筛选的首列位置
+	 * @return 修改后的DataBean实体
 	 */
-	public DataBean getFrequentKItemSet(DataBean dataVO, Sheet sheet, List<Cell[]> cellList, int threshold,
+	public DataBean getFrequentKItemSet(DataBean dataBean, Sheet sheet, List<Cell[]> cellList, int threshold,
 			int columnInitLoca) {
 		int i, j, n;
 		boolean flag = true;
-		FrequentItemsetBean frequentItemSet = dataVO.getFrequentItemSet();
+		FrequentItemsetBean frequentItemSet = dataBean.getFrequentItemSet();
 		List<List<Integer>> frequentItemList = frequentItemSet.getFrequentItemList();
-		CandidateItemsetBean candidateItemSet = dataVO.getCandidateItemSet();
+		CandidateItemsetBean candidateItemSet = dataBean.getCandidateItemSet();
 		List<List<Integer>> candidateItemList = candidateItemSet.getCandidateItemList();
 		if (!candidateItemList.isEmpty()) {
 			List<Integer> candidateItem = candidateItemList.get(0);
@@ -259,20 +245,20 @@ public class Apriori {
 			}
 			inFrequentItemSet.setInFrequentItemList(inFrequentItemList);
 			frequentItemSet.setFrequentItemList(frequentItemList);
-			dataVO.setInFrequentItemSet(inFrequentItemSet);
-			dataVO.setFrequentItemSet(frequentItemSet);
+			dataBean.setInFrequentItemSet(inFrequentItemSet);
+			dataBean.setFrequentItemSet(frequentItemSet);
 		}
-		return dataVO;
+		return dataBean;
 	}
 
 	/**
 	 * 得到最大频繁项集
+	 * @param dataBean
 	 * 
-	 * @param dataVO
 	 * @return 返回存放了最大频繁项集的list
 	 */
-	public List<List<Integer>> getFrequentMaxItemset(DataBean dataVO) {
-		FrequentItemsetBean frequentItemSet = dataVO.getFrequentItemSet();
+	public List<List<Integer>> getFrequentMaxItemset(DataBean dataBean) {
+		FrequentItemsetBean frequentItemSet = dataBean.getFrequentItemSet();
 		List<List<Integer>> frequentItemList = frequentItemSet.getFrequentItemList();
 		// 当存在多个最大频繁项集时，用list封装
 		List<List<Integer>> biggestItemList = new ArrayList<List<Integer>>();
@@ -295,21 +281,7 @@ public class Apriori {
 	/**
 	 * 运行Apriori算法
 	 */
-	public void startApriori() {
-		// System.out.println("请输入文件的绝对路径:");
-		// Scanner scan = new Scanner(System.in);
-		// String filePath = scan.nextLine();
-		// Workbook workbook = ExcelUtil.readExcel(filePath);
-		// System.out.println("请输入Excel文件要读取的工作表位置：");
-		// int sheetLoca = scan.nextInt();
-		// Sheet sheet = workbook.getSheet(sheetLoca);
-		// System.out.println("请输入想获得的表头行位置(表头行不存在则输入-1)：");
-		// int wantLoca = scan.nextInt();
-		// System.out.println("请输入要进行Apriori算法记录的开始的行数：");
-		// int initRowLoca = scan.nextInt();
-		// System.out.println("请输入要进行Apriori算法记录的开始的列数(即流水号ID的下一列)：");
-		// int columnInitLoca = scan.nextInt();
-
+	public void startApriori() {		
 		// 文件名
 		String filePath = "basketdata.xls";
 		Workbook workbook = excelUtil.readExcel(filePath);
@@ -322,22 +294,23 @@ public class Apriori {
 		//
 		System.out.println("请输入阈值：");
 		Scanner scan = new Scanner(System.in);
-		int threshold = scan.nextInt();
+		int threshold = scan.nextInt();// 阈值
+		
 		Cell[] headArray = excelUtil.getHeadInfo(workbook, sheetLoca, wantLoca);
 		List<Cell[]> cellList = excelUtil.sheetEncapsulation(workbook, sheetLoca, initRowLoca);
-		DataBean dataVO = getFrequentOneItemset(cellList, columnInitLoca, threshold);
-		for (; !dataVO.getCandidateItemSet().getCandidateItemList().isEmpty();) {
+		DataBean dataBean = getFrequentOneItemset(cellList, columnInitLoca, threshold);
+		for (; !dataBean.getCandidateItemSet().getCandidateItemList().isEmpty();) {
 			// 构造新的候选子集
-			dataVO = createCandidateItemSet(dataVO);
+			dataBean = createCandidateItemSet(dataBean);
 			// 对候选子集进行剪枝
-			dataVO = pruning(dataVO);
+			dataBean = pruning(dataBean);
 			// 得到频繁-k项集
-			dataVO = getFrequentKItemSet(dataVO, sheet, cellList, threshold, columnInitLoca);
+			dataBean = getFrequentKItemSet(dataBean, sheet, cellList, threshold, columnInitLoca);
 		}
 		// 打印频繁项集的内容
-		printUtil.printFrequentItemSetContent(dataVO.getFrequentItemSet(), headArray);
+		printUtil.printFrequentItemSetContent(dataBean.getFrequentItemSet(), headArray);
 		// 得到最大频繁项集
-		List<List<Integer>> biggestFrequentItemSetList = getFrequentMaxItemset(dataVO);
+		List<List<Integer>> biggestFrequentItemSetList = getFrequentMaxItemset(dataBean);
 		// 打印最大频繁项集的内容
 		printUtil.printBiggestFrequentItemSetContent(biggestFrequentItemSetList, headArray);
 		scan.close();
